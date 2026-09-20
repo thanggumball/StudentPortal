@@ -242,10 +242,31 @@ public class AuthService : IAuthService
         };
     }
 
-    public Task LogoutAsync(
+    public async Task LogoutAsync(
         LogoutRequest request,
         CancellationToken ct = default)
-        => throw new NotImplementedException();
+    {
+        var tokenHash = Convert.ToHexString(
+            SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(request.RefreshToken)));
+
+        var refreshToken = await _refreshTokenRepository
+            .FindByTokenHashAsync(tokenHash, ct);
+
+        if (refreshToken is null)
+        {
+            return;
+        }
+
+        if (!refreshToken.RevokedAt.HasValue)
+        {
+            refreshToken.RevokedAt = DateTime.UtcNow;
+
+            _refreshTokenRepository.Update(refreshToken);
+
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+    }
 
     public async Task ChangePasswordAsync(
         Guid userId,
