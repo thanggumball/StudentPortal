@@ -44,4 +44,13 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         throw new NotImplementedException();
     }
+
+    public async Task<User?> GetByIdWithRoleAsync(
+    Guid id,
+    CancellationToken ct = default)
+    => await _context.Users
+        .Include(u => u.Role)
+        .FirstOrDefaultAsync(
+            u => u.Id == id && !u.IsDeleted,
+            ct);
 }
