@@ -26,24 +26,35 @@ builder.Services.AddControllers()
         {
             var errors = context.ModelState
                 .Where(entry => entry.Value?.Errors.Count > 0)
-                .SelectMany(entry => entry.Value!.Errors.Select(error => error.ErrorMessage))
+                .SelectMany(entry =>
+                    entry.Value!.Errors.Select(error => error.ErrorMessage))
                 .ToList();
 
             var message = errors.Count > 0
                 ? string.Join(" ", errors)
                 : "The submitted data is invalid.";
 
-            return new BadRequestObjectResult(ApiResponse<object?>.Fail(message));
+            return new BadRequestObjectResult(
+                ApiResponse<object?>.Fail(message));
         };
     });
+
 builder.Services.AddSwaggerDocs();
-builder.Services.AddJwtAuthentication(builder.Configuration);
+
+builder.Services.AddJwtAuthentication(
+    builder.Configuration);
+
 builder.Services.AddAuthorization();
-builder.Services.AddCorsPolicy(builder.Configuration);
+
+builder.Services.AddCorsPolicy(
+    builder.Configuration);
+
 builder.Services.AddFluentValidationAutoValidation();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Missing ConnectionStrings:DefaultConnection in appsettings.");
+var connectionString = builder.Configuration.GetConnectionString(
+    "DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Missing ConnectionStrings:DefaultConnection in appsettings.");
 
 builder.Services.AddServiceLayer(connectionString);
 
